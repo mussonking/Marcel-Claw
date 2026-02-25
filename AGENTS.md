@@ -1,3 +1,140 @@
+# Marcel-Claw — Fork perso de mussonking
+
+> **Ce repo est le fork personnel de [mussonking](https://github.com/mussonking) d'OpenClaw.**
+> Fork: `mussonking/Marcel-Claw` | Upstream: `openclaw/openclaw`
+> Objectif: hacker le coeur d'OpenClaw pour le plier à nos volontés, puis faire tourner Marcel dessus.
+
+## Contexte du fork
+
+**Marcel** est l'agent IA autonome qui tourne 24/7 sur `marcel-openclaw` (Ubuntu 24.04, IP `192.168.2.27`).
+Ce fork existe pour modifier OpenClaw directement plutôt que de patcher en surface.
+
+### Ce qu'on veut changer / améliorer
+
+- Comportements custom du gateway (routing, sessions, agent loop)
+- Nouveaux skills intégrés au core (pas juste des SKILL.md)
+- Customisation du protocole WS
+- Meilleur support multi-provider (MiniMax, Google, OpenAI-Codex)
+- Optimisations spécifiques à notre setup Linux headless
+
+### Ce qu'on NE touche PAS (upstream only)
+
+- iOS / macOS / Android apps (`apps/`)
+- Docs Mintlify (`docs/`)
+- i18n zh-CN
+
+---
+
+## Environnement de dev
+
+| Quoi            | Valeur                                                  |
+| --------------- | ------------------------------------------------------- |
+| Machine         | `marcel-openclaw`, Ubuntu 24.04                         |
+| User            | `marcel` (sudo password: `1234`)                        |
+| Node            | v24.13.1                                                |
+| pnpm            | v10.23.0                                                |
+| Gateway live    | `systemctl --user status openclaw-gateway` (port 18789) |
+| Workspace local | `~/dev/openclaw`                                        |
+| Config OpenClaw | `~/.openclaw/openclaw.json`                             |
+| Sessions Marcel | `~/.openclaw/agents/main/sessions/`                     |
+
+### Remotes git
+
+```
+origin   → https://github.com/mussonking/Marcel-Claw.git  (notre fork)
+upstream → https://github.com/openclaw/openclaw.git       (upstream officiel)
+```
+
+### Sync upstream
+
+```bash
+git fetch upstream
+git rebase upstream/main
+git push origin main --force-with-lease
+```
+
+---
+
+## Dev workflow rapide
+
+```bash
+# Build complet
+pnpm build
+
+# Dev avec hot reload (gateway sans channels Telegram etc.)
+pnpm gateway:watch
+
+# Tester notre gateway local vs le live
+pnpm openclaw gateway status
+
+# Tests unitaires (légers, rapides)
+pnpm test:fast
+
+# Tests avec profil low-memory (notre machine Linux)
+OPENCLAW_TEST_PROFILE=low OPENCLAW_TEST_SERIAL_GATEWAY=1 pnpm test
+
+# Lint + typecheck
+pnpm check
+```
+
+### Tester sur le gateway live
+
+Le gateway qui fait tourner Marcel est un **user systemd service**.
+Pour le remplacer par notre build fork:
+
+```bash
+# 1. Build notre version
+pnpm build
+
+# 2. Lier globalement (remplace le npm global)
+sudo npm link
+
+# 3. Restart le gateway Marcel
+systemctl --user restart openclaw-gateway
+
+# 4. Vérifier
+systemctl --user status openclaw-gateway
+journalctl --user -u openclaw-gateway -f
+```
+
+Pour revenir à la version officielle:
+
+```bash
+sudo npm install -g openclaw@latest
+systemctl --user restart openclaw-gateway
+```
+
+---
+
+## Architecture clé (rappel rapide)
+
+```
+src/entry.ts          → point d'entrée CLI
+src/gateway/          → Gateway server (WS port 18789 + HTTP)
+src/agents/           → Pi agent runtime (boucle principale)
+src/channels/         → Adapters canaux (Telegram, Discord, Slack...)
+src/routing/          → Résolution sessions / routes
+src/telegram/         → Channel Telegram (Marcel communique via @Marcel_Madera_Bot)
+src/providers/        → LLM providers (OpenAI, Google, MiniMax...)
+src/skills/           → Skills core
+skills/               → Skills pluggables (SKILL.md based)
+```
+
+**Fichier le plus important pour l'agent loop:** `src/agents/pi-embedded-runner/run.ts`
+
+---
+
+## Notes Marcel-spécifiques
+
+- Marcel agent ID: `main`
+- Canal: Telegram `@Marcel_Madera_Bot`
+- Provider primary: `minimax-portal/MiniMax-M2.5` (OAuth)
+- Provider fallback: `google/gemini-3-flash-preview`, `openai-codex/gpt-5.2`
+- Mission Control: Docker sur port 1337 → `marcel.madera.tools` via Cloudflare tunnel
+- Skills custom Marcel: `~/.openclaw/workspace/skills/`
+
+---
+
 # Repository Guidelines
 
 - Repo: https://github.com/openclaw/openclaw
