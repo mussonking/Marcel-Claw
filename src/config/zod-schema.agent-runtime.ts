@@ -263,6 +263,7 @@ export const ToolsWebSearchSchema = z
         z.literal("grok"),
         z.literal("gemini"),
         z.literal("kimi"),
+        z.literal("local_mcp"),
       ])
       .optional(),
     apiKey: z.string().optional().register(sensitive),
@@ -300,6 +301,7 @@ export const ToolsWebSearchSchema = z
       })
       .strict()
       .optional(),
+    mcpUrl: z.string().optional(),
   })
   .strict()
   .optional();
