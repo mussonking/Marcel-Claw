@@ -7,7 +7,7 @@ import { seedMainSessionStore, withTempHeartbeatSandbox } from "./heartbeat-runn
 // Avoid pulling optional runtime deps during isolated runs.
 vi.mock("jiti", () => ({ createJiti: () => () => ({}) }));
 
-installHeartbeatRunnerTestRuntime({ includeSlack: true });
+installHeartbeatRunnerTestRuntime();
 
 describe("runHeartbeatOnce", () => {
   it("uses the delivery target as sender when lastTo differs", async () => {
