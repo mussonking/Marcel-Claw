@@ -19,7 +19,6 @@ import {
   type ExecHostResponse,
 } from "../infra/exec-host.js";
 import { sanitizeHostExecEnv } from "../infra/host-env-security.js";
-import { runBrowserProxyCommand } from "./invoke-browser.js";
 import { handleSystemRunInvoke } from "./invoke-system-run.js";
 import type {
   ExecEventPayload,
@@ -313,17 +312,6 @@ async function sendJsonPayloadResult(
   });
 }
 
-async function sendRawPayloadResult(
-  client: GatewayClient,
-  frame: NodeInvokeRequestPayload,
-  payloadJSON: string,
-) {
-  await sendInvokeResult(client, frame, {
-    ok: true,
-    payloadJSON,
-  });
-}
-
 async function sendErrorResult(
   client: GatewayClient,
   frame: NodeInvokeRequestPayload,
@@ -404,16 +392,6 @@ export async function handleInvoke(
       const env = sanitizeEnv(undefined);
       const payload = await handleSystemWhich(params, env);
       await sendJsonPayloadResult(client, frame, payload);
-    } catch (err) {
-      await sendInvalidRequestResult(client, frame, err);
-    }
-    return;
-  }
-
-  if (command === "browser.proxy") {
-    try {
-      const payload = await runBrowserProxyCommand(frame.paramsJSON);
-      await sendRawPayloadResult(client, frame, payload);
     } catch (err) {
       await sendInvalidRequestResult(client, frame, err);
     }

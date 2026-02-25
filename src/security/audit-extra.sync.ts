@@ -12,7 +12,6 @@ import { isDangerousNetworkMode, normalizeNetworkMode } from "../agents/sandbox/
 import type { SandboxToolPolicy } from "../agents/sandbox/types.js";
 import { getBlockedBindReason } from "../agents/sandbox/validate-sandbox-security.js";
 import { resolveToolProfilePolicy } from "../agents/tool-policy.js";
-import { resolveBrowserConfig } from "../browser/config.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/config.js";
 import {
@@ -301,12 +300,8 @@ function isWebFetchEnabled(cfg: OpenClawConfig): boolean {
   return true;
 }
 
-function isBrowserEnabled(cfg: OpenClawConfig): boolean {
-  try {
-    return resolveBrowserConfig(cfg.browser, cfg).enabled;
-  } catch {
-    return true;
-  }
+function isBrowserEnabled(_cfg: OpenClawConfig): boolean {
+  return false; // Browser tool removed.
 }
 
 function listGroupPolicyOpen(cfg: OpenClawConfig): string[] {
@@ -479,7 +474,7 @@ export function collectAttackSurfaceSummaryFindings(cfg: OpenClawConfig): Securi
   const elevated = cfg.tools?.elevated?.enabled !== false;
   const webhooksEnabled = cfg.hooks?.enabled === true;
   const internalHooksEnabled = cfg.hooks?.internal?.enabled === true;
-  const browserEnabled = cfg.browser?.enabled ?? true;
+  const browserEnabled = false;
 
   const detail =
     `groups: open=${group.open}, allowlist=${group.allowlist}` +

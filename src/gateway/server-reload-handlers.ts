@@ -18,14 +18,12 @@ import { setCommandLaneConcurrency, getTotalQueueSize } from "../process/command
 import { CommandLane } from "../process/lanes.js";
 import type { ChannelKind, GatewayReloadPlan } from "./config-reload.js";
 import { resolveHooksConfig } from "./hooks.js";
-import { startBrowserControlServerIfEnabled } from "./server-browser.js";
 import { buildGatewayCronService, type GatewayCronState } from "./server-cron.js";
 
 type GatewayHotReloadState = {
   hooksConfig: ReturnType<typeof resolveHooksConfig>;
   heartbeatRunner: HeartbeatRunner;
   cronState: GatewayCronState;
-  browserControl: Awaited<ReturnType<typeof startBrowserControlServerIfEnabled>> | null;
 };
 
 export function createGatewayReloadHandlers(params: {
@@ -40,7 +38,6 @@ export function createGatewayReloadHandlers(params: {
     warn: (msg: string) => void;
     error: (msg: string) => void;
   };
-  logBrowser: { error: (msg: string) => void };
   logChannels: { info: (msg: string) => void; error: (msg: string) => void };
   logCron: { error: (msg: string) => void };
   logReload: { info: (msg: string) => void; warn: (msg: string) => void };
@@ -77,17 +74,6 @@ export function createGatewayReloadHandlers(params: {
       void nextState.cronState.cron
         .start()
         .catch((err) => params.logCron.error(`failed to start: ${String(err)}`));
-    }
-
-    if (plan.restartBrowserControl) {
-      if (state.browserControl) {
-        await state.browserControl.stop().catch(() => {});
-      }
-      try {
-        nextState.browserControl = await startBrowserControlServerIfEnabled();
-      } catch (err) {
-        params.logBrowser.error(`server failed to start: ${String(err)}`);
-      }
     }
 
     if (plan.restartGmailWatcher) {

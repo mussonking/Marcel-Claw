@@ -14,11 +14,8 @@ export { ensureSandboxWorkspaceForSession, resolveSandboxContext } from "./sandb
 
 export { buildSandboxCreateArgs } from "./sandbox/docker.js";
 export {
-  listSandboxBrowsers,
   listSandboxContainers,
-  removeSandboxBrowserContainer,
   removeSandboxContainer,
-  type SandboxBrowserInfo,
   type SandboxContainerInfo,
 } from "./sandbox/manage.js";
 export {
@@ -29,8 +26,6 @@ export {
 export { resolveSandboxToolPolicyForAgent } from "./sandbox/tool-policy.js";
 
 export type {
-  SandboxBrowserConfig,
-  SandboxBrowserContext,
   SandboxConfig,
   SandboxContext,
   SandboxDockerConfig,

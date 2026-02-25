@@ -56,7 +56,6 @@ import {
 } from "./events.js";
 import { ExecApprovalManager } from "./exec-approval-manager.js";
 import { NodeRegistry } from "./node-registry.js";
-import type { startBrowserControlServerIfEnabled } from "./server-browser.js";
 import { createChannelManager } from "./server-channels.js";
 import { createAgentEventHandler } from "./server-chat.js";
 import { createGatewayCloseHandler } from "./server-close.js";
@@ -100,7 +99,6 @@ const logCanvas = log.child("canvas");
 const logDiscovery = log.child("discovery");
 const logTailscale = log.child("tailscale");
 const logChannels = log.child("channels");
-const logBrowser = log.child("browser");
 const logHealth = log.child("health");
 const logCron = log.child("cron");
 const logReload = log.child("reload");
@@ -666,9 +664,8 @@ export async function startGatewayServer(
         logTailscale,
       });
 
-  let browserControl: Awaited<ReturnType<typeof startBrowserControlServerIfEnabled>> = null;
   if (!minimalTestGateway) {
-    ({ browserControl, pluginServices } = await startGatewaySidecars({
+    ({ pluginServices } = await startGatewaySidecars({
       cfg: cfgAtStart,
       pluginRegistry,
       defaultWorkspaceDir,
@@ -677,7 +674,6 @@ export async function startGatewayServer(
       log,
       logHooks,
       logChannels,
-      logBrowser,
     }));
   }
 
@@ -701,7 +697,6 @@ export async function startGatewayServer(
             hooksConfig,
             heartbeatRunner,
             cronState,
-            browserControl,
           }),
           setState: (nextState) => {
             hooksConfig = nextState.hooksConfig;
@@ -709,12 +704,10 @@ export async function startGatewayServer(
             cronState = nextState.cronState;
             cron = cronState.cron;
             cronStorePath = cronState.storePath;
-            browserControl = nextState.browserControl;
           },
           startChannel,
           stopChannel,
           logHooks,
-          logBrowser,
           logChannels,
           logCron,
           logReload,
@@ -754,7 +747,6 @@ export async function startGatewayServer(
     chatRunState,
     clients,
     configReloader,
-    browserControl,
     wss,
     httpServer,
     httpServers,

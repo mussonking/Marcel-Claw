@@ -2,8 +2,6 @@ import { isIP } from "node:net";
 import path from "node:path";
 import { resolveSandboxConfigForAgent } from "../agents/sandbox.js";
 import { execDockerRaw } from "../agents/sandbox/docker.js";
-import { resolveBrowserConfig, resolveProfile } from "../browser/config.js";
-import { resolveBrowserControlAuth } from "../browser/control-auth.js";
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/config.js";
@@ -27,7 +25,6 @@ import {
   collectIncludeFilePermFindings,
   collectInstalledSkillsCodeSafetyFindings,
   collectLikelyMultiUserSetupFindings,
-  collectSandboxBrowserHashLabelFindings,
   collectMinimalProfileOverrideFindings,
   collectModelHygieneFindings,
   collectNodeDangerousAllowCommandFindings,
@@ -580,66 +577,10 @@ function isStrictLoopbackTrustedProxyEntry(entry: string): boolean {
 }
 
 function collectBrowserControlFindings(
-  cfg: OpenClawConfig,
-  env: NodeJS.ProcessEnv,
+  _cfg: OpenClawConfig,
+  _env: NodeJS.ProcessEnv,
 ): SecurityAuditFinding[] {
-  const findings: SecurityAuditFinding[] = [];
-
-  let resolved: ReturnType<typeof resolveBrowserConfig>;
-  try {
-    resolved = resolveBrowserConfig(cfg.browser, cfg);
-  } catch (err) {
-    findings.push({
-      checkId: "browser.control_invalid_config",
-      severity: "warn",
-      title: "Browser control config looks invalid",
-      detail: String(err),
-      remediation: `Fix browser.cdpUrl in ${resolveConfigPath()} and re-run "${formatCliCommand("openclaw security audit --deep")}".`,
-    });
-    return findings;
-  }
-
-  if (!resolved.enabled) {
-    return findings;
-  }
-
-  const browserAuth = resolveBrowserControlAuth(cfg, env);
-  if (!browserAuth.token && !browserAuth.password) {
-    findings.push({
-      checkId: "browser.control_no_auth",
-      severity: "critical",
-      title: "Browser control has no auth",
-      detail:
-        "Browser control HTTP routes are enabled but no gateway.auth token/password is configured. " +
-        "Any local process (or SSRF to loopback) can call browser control endpoints.",
-      remediation:
-        "Set gateway.auth.token (recommended) or gateway.auth.password so browser control HTTP routes require authentication. Restarting the gateway will auto-generate gateway.auth.token when browser control is enabled.",
-    });
-  }
-
-  for (const name of Object.keys(resolved.profiles)) {
-    const profile = resolveProfile(resolved, name);
-    if (!profile || profile.cdpIsLoopback) {
-      continue;
-    }
-    let url: URL;
-    try {
-      url = new URL(profile.cdpUrl);
-    } catch {
-      continue;
-    }
-    if (url.protocol === "http:") {
-      findings.push({
-        checkId: "browser.remote_cdp_http",
-        severity: "warn",
-        title: "Remote CDP uses HTTP",
-        detail: `browser profile "${name}" uses http CDP (${profile.cdpUrl}); this is OK only if it's tailnet-only or behind an encrypted tunnel.`,
-        remediation: `Prefer HTTPS/TLS or a tailnet-only endpoint for remote CDP.`,
-      });
-    }
-  }
-
-  return findings;
+  return []; // Browser tool removed — no browser control to audit.
 }
 
 function collectLoggingFindings(cfg: OpenClawConfig): SecurityAuditFinding[] {
@@ -977,11 +918,6 @@ export async function runSecurityAudit(opts: SecurityAuditOptions): Promise<Secu
     }
     findings.push(
       ...(await collectStateDeepFilesystemFindings({ cfg, env, stateDir, platform, execIcacls })),
-    );
-    findings.push(
-      ...(await collectSandboxBrowserHashLabelFindings({
-        execDockerRawFn: opts.execDockerRawFn,
-      })),
     );
     findings.push(...(await collectPluginsTrustFindings({ cfg, stateDir })));
     if (opts.deep === true) {
