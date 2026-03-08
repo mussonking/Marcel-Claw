@@ -1,0 +1,8 @@
+{
+  "id": "librarian",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

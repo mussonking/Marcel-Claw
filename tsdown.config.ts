@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, type UserConfig } from "tsdown";
 import {
   listBundledPluginBuildEntries,
@@ -23,6 +24,28 @@ type InputOptionsReturn = InputOptionsFactory extends (
   ? Return
   : never;
 type OnLogFunction = InputOptionsArg extends { onLog?: infer OnLog } ? NonNullable<OnLog> : never;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const STUB_PATH = path.resolve(__dirname, "src/_stubs/empty.ts");
+
+// Stub out packages removed from Marcel-Claw fork so tsdown bundles empty shims.
+const REMOVED_PACKAGES = [
+  "@slack/web-api",
+  "@slack/bolt",
+  "@line/bot-sdk",
+  "@discordjs/voice",
+  "@aws-sdk/client-bedrock",
+];
+
+const stubRemovedPackages = {
+  name: "stub-removed-packages",
+  resolveId(id: string) {
+    if (REMOVED_PACKAGES.some((pkg) => id === pkg || id.startsWith(pkg + "/"))) {
+      return STUB_PATH;
+    }
+    return null;
+  },
+};
 
 const env = {
   NODE_ENV: "production",
@@ -86,6 +109,7 @@ function nodeBuildConfig(config: UserConfig): UserConfig {
     env,
     fixedExtension: false,
     platform: "node",
+    plugins: [stubRemovedPackages],
     inputOptions: buildInputOptions,
   };
 }

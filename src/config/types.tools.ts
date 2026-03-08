@@ -485,9 +485,11 @@ export type ToolsConfig = {
     search?: {
       /** Enable managed web_search and optional Codex-native web search. */
       enabled?: boolean;
-      /** Search provider id. */
-      provider?: string;
-      /** Shared API key slot used by providers that do not need nested config. */
+      /** Search provider ("brave", "perplexity", "grok", "gemini", "kimi", or "local_mcp"). */
+      provider?: "brave" | "perplexity" | "grok" | "gemini" | "kimi" | "local_mcp";
+      /** Base URL for local MCP search server (used when provider="local_mcp"). */
+      mcpUrl?: string;
+      /** Brave Search API key (optional; defaults to BRAVE_API_KEY env var). */
       apiKey?: SecretInput;
       /** Default search results count (1-10). */
       maxResults?: number;

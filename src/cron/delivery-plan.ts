@@ -37,7 +37,7 @@ export function resolveCronDeliveryPlan(job: CronJob): CronDeliveryPlan {
       ? "announce"
       : normalizedMode === "webhook"
         ? "webhook"
-        : normalizedMode === "none"
+        : normalizedMode === "none" || normalizedMode === "silent"
           ? "none"
           : normalizedMode === "deliver"
             ? "announce"

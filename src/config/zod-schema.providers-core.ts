@@ -133,6 +133,8 @@ export const TelegramGroupSchema = z
     enabled: z.boolean().optional(),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     systemPrompt: z.string().optional(),
+    compactionMode: z.union([z.literal("normal"), z.literal("light")]).optional(),
+    memoryEnabled: z.boolean().optional(),
     topics: z.record(z.string(), TelegramTopicSchema.optional()).optional(),
     errorPolicy: TelegramErrorPolicySchema,
     errorCooldownMs: z.number().int().nonnegative().optional(),

@@ -300,7 +300,16 @@ const CodexUserLocationSchema = z
 export const ToolsWebSearchSchema = z
   .object({
     enabled: z.boolean().optional(),
-    provider: z.string().optional(),
+    provider: z
+      .union([
+        z.literal("brave"),
+        z.literal("perplexity"),
+        z.literal("grok"),
+        z.literal("gemini"),
+        z.literal("kimi"),
+        z.literal("local_mcp"),
+      ])
+      .optional(),
     maxResults: z.number().int().positive().optional(),
     timeoutSeconds: z.number().int().positive().optional(),
     cacheTtlMinutes: z.number().nonnegative().optional(),
@@ -315,6 +324,7 @@ export const ToolsWebSearchSchema = z
       })
       .strict()
       .optional(),
+    mcpUrl: z.string().optional(),
   })
   .strict()
   .optional();
