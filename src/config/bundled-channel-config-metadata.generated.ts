@@ -12566,6 +12566,21 @@ export const GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA = [
               systemPrompt: {
                 type: "string",
               },
+              compactionMode: {
+                anyOf: [
+                  {
+                    type: "string",
+                    const: "normal",
+                  },
+                  {
+                    type: "string",
+                    const: "light",
+                  },
+                ],
+              },
+              memoryEnabled: {
+                type: "boolean",
+              },
               topics: {
                 type: "object",
                 propertyNames: {
@@ -13598,6 +13613,21 @@ export const GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA = [
                     },
                     systemPrompt: {
                       type: "string",
+                    },
+                    compactionMode: {
+                      anyOf: [
+                        {
+                          type: "string",
+                          const: "normal",
+                        },
+                        {
+                          type: "string",
+                          const: "light",
+                        },
+                      ],
+                    },
+                    memoryEnabled: {
+                      type: "boolean",
                     },
                     topics: {
                       type: "object",

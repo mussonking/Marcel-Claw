@@ -485,8 +485,8 @@ export type ToolsConfig = {
     search?: {
       /** Enable managed web_search and optional Codex-native web search. */
       enabled?: boolean;
-      /** Search provider ("brave", "perplexity", "grok", "gemini", "kimi", or "local_mcp"). */
-      provider?: "brave" | "perplexity" | "grok" | "gemini" | "kimi" | "local_mcp";
+      /** Search provider id. Marcel-Claw adds "local_mcp" for MCP-based search. */
+      provider?: string;
       /** Base URL for local MCP search server (used when provider="local_mcp"). */
       mcpUrl?: string;
       /** Brave Search API key (optional; defaults to BRAVE_API_KEY env var). */
