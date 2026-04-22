@@ -1,15 +1,16 @@
 /**
- * Marcel Librarian — Core Extension
+ * Marcel Librarian -- Core Extension
  *
  * Persistent memory and context injection for Marcel.
  *
- * - before_prompt_build: FTS5 search against SQLite memories DB → injects top relevant results
- * - agent_end: heuristic extraction → INSERT into memories + sessions + queue tables
+ * - before_prompt_build: FTS5 search against SQLite memories DB -> injects top relevant results
+ * - agent_end: heuristic extraction -> INSERT into memories + sessions + queue tables
  *   Only processes Telegram/Discord sessions (not cron/automated sessions).
  *   Sends a Telegram notification listing what was stored, with numbered IDs for easy deletion.
  * - Deep analysis runs via a separate cron job (librarian-analyze) every 2h
  */
 
+import { execFile } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
@@ -28,17 +29,17 @@ function isRealUserSession(sessionKey: string): boolean {
   return sessionKey.includes(":telegram:") || sessionKey.includes(":discord:");
 }
 
-async function sendTelegramNotif(
+async function _sendTelegramNotif(
   token: string,
   chatId: string,
   items: Array<{ id: number; text: string; category: string }>,
 ): Promise<void> {
   const lines: string[] = [
-    `🧠 *Memory — ${items.length} item${items.length > 1 ? "s" : ""} added*`,
+    `🧠 *Memory -- ${items.length} item${items.length > 1 ? "s" : ""} added*`,
   ];
 
   for (const item of items) {
-    const preview = item.text.length > 90 ? item.text.slice(0, 90) + "…" : item.text;
+    const preview = item.text.length > 90 ? item.text.slice(0, 90) + "..." : item.text;
     lines.push(`\`[${item.id}]\` _${item.category}_: ${preview}`);
   }
 
@@ -89,12 +90,14 @@ export default {
           k.toLowerCase() === chatId.toLowerCase() ||
           `@${k}`.toLowerCase() === chatId.toLowerCase(),
       );
-      if (!key) return false;
+      if (!key) {
+        return false;
+      }
       return groups[key]?.memoryEnabled === true;
     };
 
     // ========================================================================
-    // Hook 1 — Context Injection (before LLM call)
+    // Hook 1 -- Context Injection (before LLM call)
     // ========================================================================
 
     api.on(
@@ -102,62 +105,80 @@ export default {
       (event, _ctx) => {
         try {
           const context = storage.buildContextBlock(event.prompt ?? "");
-          if (!context) return;
+          if (!context) {
+            return {};
+          }
 
           api.logger.info?.("librarian: injecting context");
           return { prependContext: context };
         } catch (err) {
-          api.logger.warn(`librarian: context injection failed: ${String(err)}`);
+          api.logger.warn(
+            `librarian: context injection failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          return {};
         }
       },
       { priority: 80 },
     );
 
     // ========================================================================
-    // Hook 2 — Session Processing (after conversation ends)
+    // Hook 2 -- Session Processing (after conversation ends)
     // ========================================================================
 
     api.on("agent_end", async (event, ctx) => {
-      if (!event.success) return;
+      if (!event.success) {
+        return;
+      }
 
       const messages = event.messages;
-      if (!messages || messages.length === 0) return;
+      if (!messages || messages.length === 0) {
+        return;
+      }
 
-      // Skip cron sessions to avoid self-referential loops
+      // Skip cron/automated sessions to avoid self-referential loops
       const sessionId = ctx.sessionId ?? "unknown";
-      if (sessionId.startsWith("librarian-")) return;
+      if (sessionId.startsWith("librarian-")) {
+        return;
+      }
 
       // Only process Telegram/Discord sessions with memoryEnabled: true
       const sessionKey = ctx.sessionKey ?? "";
-      if (!isRealUserSession(sessionKey)) return;
+      if (!isRealUserSession(sessionKey)) {
+        return;
+      }
 
       const chatId = parseTelegramChatId(sessionKey);
-      if (!chatId || !isMemoryEnabledForGroup(chatId)) return;
-
-      try {
-        const agentDir = path.resolve(workspaceDir, "../agents/main/sessions");
-
-        const inserted = storage.processSession({
-          sessionId,
-          messages,
-          sessionsDir: agentDir,
-        });
-
-        api.logger.info?.(
-          `librarian: session processed (${sessionId.slice(0, 8)}) — ${inserted.length} memories added`,
-        );
-
-        // Send Telegram notification if anything was stored
-        if (inserted.length > 0) {
-          const token = process.env.TELEGRAM_BOT_TOKEN;
-          const chatId = parseTelegramChatId(sessionKey);
-          if (token && chatId) {
-            await sendTelegramNotif(token, chatId, inserted);
-          }
-        }
-      } catch (err) {
-        api.logger.warn(`librarian: session processing failed: ${String(err)}`);
+      if (!chatId || !isMemoryEnabledForGroup(chatId)) {
+        return;
       }
+
+      const extractScript = path.join(workspaceDir, "librarian", "librarian-extract.py");
+
+      // Fire-and-forget: LLM extraction runs async, does not block next conversation
+      const child = execFile(
+        "python3",
+        [extractScript, sessionId, chatId],
+        { timeout: 180_000 },
+        (err, stdout, stderr) => {
+          if (err) {
+            const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+            api.logger.warn(`librarian: extraction failed (${sessionId.slice(0, 8)}): ${errorMsg}`);
+          }
+          if (stdout) {
+            api.logger.info?.(`librarian: ${stdout.trim()}`);
+          }
+          if (stderr) {
+            api.logger.warn(`librarian: ${stderr.trim()}`);
+          }
+        },
+      );
+
+      // Pipe messages as JSON to the script's stdin
+      const messagesJson = JSON.stringify(messages);
+      child.stdin?.write(messagesJson);
+      child.stdin?.end();
+
+      api.logger.info?.(`librarian: LLM extraction started async (${sessionId.slice(0, 8)})`);
     });
 
     // ========================================================================

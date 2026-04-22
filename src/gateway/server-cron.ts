@@ -467,7 +467,7 @@ export function buildGatewayCronService(params: {
             const failureDest = resolveFailureDestination(job, params.cfg.cron?.failureDestination);
 
             if (failureDest) {
-              // Explicit failureDestination configured — use it
+              // Explicit failureDestination configured -- use it
               const failurePayload = {
                 jobId: job.id,
                 jobName: job.name,
@@ -519,7 +519,7 @@ export function buildGatewayCronService(params: {
                 );
               }
             } else {
-              // No explicit failureDestination — fall back to primary delivery channel (#60608)
+              // No explicit failureDestination -- fall back to primary delivery channel (#60608)
               const primaryPlan = resolveCronDeliveryPlan(job);
               if (primaryPlan.mode === "announce" && primaryPlan.requested) {
                 const { agentId, cfg: runtimeConfig } = resolveCronAgent(job.agentId);

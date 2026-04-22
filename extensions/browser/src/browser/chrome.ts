@@ -147,7 +147,7 @@ export async function isChromeReachable(
   try {
     await assertCdpEndpointAllowed(cdpUrl, ssrfPolicy);
     if (isWebSocketUrl(cdpUrl)) {
-      // Direct WebSocket endpoint — probe via WS handshake.
+      // Direct WebSocket endpoint -- probe via WS handshake.
       return await canOpenWebSocket(cdpUrl, timeoutMs);
     }
     const version = await fetchChromeVersion(cdpUrl, timeoutMs, ssrfPolicy);
@@ -201,7 +201,7 @@ export async function getChromeWebSocketUrl(
 ): Promise<string | null> {
   await assertCdpEndpointAllowed(cdpUrl, ssrfPolicy);
   if (isWebSocketUrl(cdpUrl)) {
-    // Direct WebSocket endpoint — the cdpUrl is already the WebSocket URL.
+    // Direct WebSocket endpoint -- the cdpUrl is already the WebSocket URL.
     return cdpUrl;
   }
   const version = await fetchChromeVersion(cdpUrl, timeoutMs, ssrfPolicy);
@@ -437,7 +437,7 @@ export async function launchOpenClawChrome(
     );
   }
 
-  // Chrome started successfully — detach the stderr listener and release the buffer.
+  // Chrome started successfully -- detach the stderr listener and release the buffer.
   proc.stderr?.off("data", onStderr);
   stderrChunks.length = 0;
 

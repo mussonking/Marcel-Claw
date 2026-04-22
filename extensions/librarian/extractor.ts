@@ -1,8 +1,8 @@
 /**
- * Librarian — Message Extractor
+ * Librarian -- Message Extractor
  *
  * Heuristic extraction of structured information from conversation messages.
- * No LLM required — pure pattern matching for immediate (synchronous) analysis.
+ * No LLM required -- pure pattern matching for immediate (synchronous) analysis.
  */
 
 export type ExtractedInfo = {
@@ -28,7 +28,9 @@ export function parseMessages(messages: unknown[]): ParsedMessage[] {
   const parsed: ParsedMessage[] = [];
 
   for (const msg of messages) {
-    if (!msg || typeof msg !== "object") continue;
+    if (!msg || typeof msg !== "object") {
+      continue;
+    }
     const m = msg as Record<string, unknown>;
     const role = typeof m.role === "string" ? m.role : "unknown";
     const content = m.content;
@@ -107,7 +109,7 @@ const PROJECT_BLOCKLIST = new Set([
   "Open Todos",
   "Validation Failed",
   "Web Fetch",
-  "Mission Control", // too generic — appears in every session
+  "Mission Control", // too generic -- appears in every session
   "Marcel Memory",
   "Error Message",
   "Tool Call",
@@ -162,7 +164,6 @@ export function extractFromMessages(messages: unknown[]): ExtractedInfo {
   const userMessages = parsed.filter((m) => m.role === "user");
   const allMessages = parsed;
   const userTexts = userMessages.map((m) => m.text);
-  const allTexts = allMessages.map((m) => m.text);
 
   return {
     decisions: matchPatterns(userTexts, DECISION_PATTERNS),
@@ -181,7 +182,7 @@ export function extractFromMessages(messages: unknown[]): ExtractedInfo {
 
 export function buildHeuristicSummary(sessionId: string, info: ExtractedInfo): string {
   const date = new Date().toISOString().slice(0, 10);
-  const lines: string[] = [`## Session ${date} — ${sessionId.slice(0, 8)}`, ""];
+  const lines: string[] = [`## Session ${date} -- ${sessionId.slice(0, 8)}`, ""];
 
   if (info.projects.length > 0) {
     lines.push(`**Topics:** ${info.projects.join(", ")}`);

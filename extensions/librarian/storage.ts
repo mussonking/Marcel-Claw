@@ -1,20 +1,19 @@
 /**
- * Librarian — SQLite Storage Layer
+ * Librarian -- SQLite Storage Layer
  *
  * Uses node:sqlite (built-in Node 22+) with FTS5 for full-text search.
  * Zero external dependencies.
  *
  * Schema:
- *   memories      — individual facts, decisions, preferences, projects
- *   memories_fts  — FTS5 virtual table for text search
- *   sessions      — per-session metadata and summaries
- *   queue         — sessions pending deep LLM analysis
+ *   memories      -- individual facts, decisions, preferences, projects
+ *   memories_fts  -- FTS5 virtual table for text search
+ *   sessions      -- per-session metadata and summaries
+ *   queue         -- sessions pending deep LLM analysis
  */
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — node:sqlite types may not be in current @types/node
+// @ts-ignore -- node:sqlite types may not be in current @types/node
 import { DatabaseSync } from "node:sqlite";
 import { buildHeuristicSummary, extractFromMessages } from "./extractor.js";
 
@@ -67,7 +66,9 @@ export class LibrarianStorage {
   // ============================================================================
 
   private getDb(): InstanceType<typeof DatabaseSync> {
-    if (this.db) return this.db;
+    if (this.db) {
+      return this.db;
+    }
     this.db = new DatabaseSync(this.dbPath);
     this.initSchema();
     return this.db;
@@ -122,13 +123,13 @@ export class LibrarianStorage {
   }
 
   private ensureDir(): void {
-    // sync mkdir — called before DB init, and DB open will fail anyway if dir missing
+    // sync mkdir -- called before DB init, and DB open will fail anyway if dir missing
     const { mkdirSync } = require("node:fs");
     mkdirSync(this.dir, { recursive: true });
   }
 
   // ============================================================================
-  // Context Block — before_prompt_build
+  // Context Block -- before_prompt_build
   // ============================================================================
 
   buildContextBlock(query: string): string | null {
@@ -136,7 +137,7 @@ export class LibrarianStorage {
       this.ensureDir();
       const db = this.getDb();
 
-      // FTS5 search — rank by relevance, fallback to recent if query is short
+      // FTS5 search -- rank by relevance, fallback to recent if query is short
       let rows: Array<{ id: number; text: string; category: string; rank: number }>;
 
       if (query && query.length >= 5) {
@@ -169,22 +170,30 @@ export class LibrarianStorage {
           .all(MAX_CONTEXT_MEMORIES) as typeof rows;
       }
 
-      if (rows.length === 0) return null;
+      if (rows.length === 0) {
+        return null;
+      }
 
       // Group by category for readability
       const grouped = new Map<string, string[]>();
       for (const row of rows) {
-        const cat = row.category as string;
-        if (!grouped.has(cat)) grouped.set(cat, []);
+        const cat = row.category;
+        if (!grouped.has(cat)) {
+          grouped.set(cat, []);
+        }
         const text =
-          row.text.length > MAX_MEMORY_CHARS ? row.text.slice(0, MAX_MEMORY_CHARS) + "…" : row.text;
+          row.text.length > MAX_MEMORY_CHARS
+            ? row.text.slice(0, MAX_MEMORY_CHARS) + "..."
+            : row.text;
         grouped.get(cat)!.push(text);
       }
 
       const lines: string[] = ["=== LIBRARIAN MEMORY ==="];
       for (const [cat, items] of grouped) {
         lines.push(`[${cat}]`);
-        for (const item of items) lines.push(`- ${item}`);
+        for (const item of items) {
+          lines.push(`- ${item}`);
+        }
       }
       lines.push("=========================");
 
@@ -195,7 +204,7 @@ export class LibrarianStorage {
   }
 
   // ============================================================================
-  // Session Processing — agent_end
+  // Session Processing -- agent_end
   // ============================================================================
 
   processSession(params: {
@@ -251,11 +260,21 @@ export class LibrarianStorage {
         }
       };
 
-      for (const text of extracted.decisions.slice(0, 5)) tryInsert(text, "decision", 0.8);
-      for (const text of extracted.preferences.slice(0, 3)) tryInsert(text, "preference", 0.9);
-      for (const text of extracted.projects.slice(0, 5)) tryInsert(text, "project", 0.7);
-      for (const text of extracted.todos.slice(0, 3)) tryInsert(text, "todo", 0.85);
-      for (const text of extracted.facts.slice(0, 3)) tryInsert(text, "fact", 0.6);
+      for (const text of extracted.decisions.slice(0, 5)) {
+        tryInsert(text, "decision", 0.8);
+      }
+      for (const text of extracted.preferences.slice(0, 3)) {
+        tryInsert(text, "preference", 0.9);
+      }
+      for (const text of extracted.projects.slice(0, 5)) {
+        tryInsert(text, "project", 0.7);
+      }
+      for (const text of extracted.todos.slice(0, 3)) {
+        tryInsert(text, "todo", 0.85);
+      }
+      for (const text of extracted.facts.slice(0, 3)) {
+        tryInsert(text, "fact", 0.6);
+      }
 
       // Queue for deep LLM analysis (same session, real conversation)
       const sessionFile = params.sessionsDir
@@ -270,7 +289,7 @@ export class LibrarianStorage {
 
       return inserted;
     } catch {
-      // non-fatal — librarian should never crash Marcel
+      // non-fatal -- librarian should never crash Marcel
       return [];
     }
   }
@@ -295,7 +314,7 @@ export class LibrarianStorage {
   }
 
   // ============================================================================
-  // memory.md generation — called by cron after deep analysis
+  // memory.md generation -- called by cron after deep analysis
   // ============================================================================
 
   async regenerateMemoryMd(): Promise<void> {
@@ -339,19 +358,23 @@ export class LibrarianStorage {
 
       const date = new Date().toISOString().slice(0, 10);
       const lines: string[] = [
-        `# Marcel Memory — Librarian`,
-        `_Last updated: ${date} — auto-generated from DB, do not edit manually_`,
+        `# Marcel Memory -- Librarian`,
+        `_Last updated: ${date} -- auto-generated from DB, do not edit manually_`,
         "",
       ];
 
       if (projects.length) {
         lines.push("## Active Projects");
-        for (const r of projects) lines.push(`- ${r.text}`);
+        for (const r of projects) {
+          lines.push(`- ${r.text}`);
+        }
         lines.push("");
       }
       if (preferences.length) {
         lines.push("## Marco's Preferences");
-        for (const r of preferences) lines.push(`- ${r.text}`);
+        for (const r of preferences) {
+          lines.push(`- ${r.text}`);
+        }
         lines.push("");
       }
       if (decisions.length) {
@@ -364,12 +387,16 @@ export class LibrarianStorage {
       }
       if (entities.length) {
         lines.push("## Known Entities");
-        for (const r of entities) lines.push(`- ${r.text}`);
+        for (const r of entities) {
+          lines.push(`- ${r.text}`);
+        }
         lines.push("");
       }
       if (todos.length) {
         lines.push("## Open TODOs");
-        for (const r of todos) lines.push(`- ${r.text}`);
+        for (const r of todos) {
+          lines.push(`- ${r.text}`);
+        }
         lines.push("");
       }
 

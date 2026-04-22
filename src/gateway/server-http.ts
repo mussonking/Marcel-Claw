@@ -376,7 +376,7 @@ export async function runGatewayHttpRequestStages(
       // Log and skip the failing stage so subsequent stages (control-ui,
       // gateway-probes, etc.) remain reachable. A common trigger is a
       // plugin-owned route/runtime code still failing to load an optional dependency.
-      console.error(`[gateway-http] stage "${stage.name}" threw — skipping:`, err);
+      console.error(`[gateway-http] stage "${stage.name}" threw -- skipping:`, err);
     }
   }
   return false;

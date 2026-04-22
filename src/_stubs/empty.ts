@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 // Empty stub for removed packages
 const handler = new Proxy(
   {},

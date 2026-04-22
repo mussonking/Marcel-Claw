@@ -455,7 +455,7 @@ export async function runSearchSetupFlow(
     const ref = buildSearchEnvRef(config, choice);
     await prompter.note(
       [
-        "Secret references enabled — OpenClaw will store a reference instead of the API key.",
+        "Secret references enabled -- OpenClaw will store a reference instead of the API key.",
         `Env var: ${ref.id}${envAvailable ? " (detected)" : ""}.`,
         ...(envAvailable ? [] : [`Set ${ref.id} in the Gateway environment.`]),
         "Docs: https://docs.openclaw.ai/tools/web",
@@ -518,7 +518,7 @@ export async function runSearchSetupFlow(
 
   await prompter.note(
     [
-      `No ${credentialLabel} stored — web_search won't work until a key is available.`,
+      `No ${credentialLabel} stored -- web_search won't work until a key is available.`,
       `Get your key at: ${entry.signupUrl}`,
       "Docs: https://docs.openclaw.ai/tools/web",
     ].join("\n"),

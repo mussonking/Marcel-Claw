@@ -179,7 +179,7 @@ Rules:
   5. KNOWN ISSUES: bugs, limitations, active workarounds
 
 Output format (strict Markdown, nothing else):
-# Compaction memory — ${today}
+# Compaction memory -- ${today}
 
 ## Technical decisions
 - [fact]
@@ -282,7 +282,7 @@ export function handleAutoCompactionStart(ctx: EmbeddedPiSubscribeContext) {
         return;
       }
 
-      // 3. Extract facts → write to memory/
+      // 3. Extract facts -> write to memory/
       try {
         let facts: string | null;
         if (compactionMode === "light") {
@@ -351,7 +351,7 @@ export function handleAutoCompactionEnd(
   // Increment counter whenever compaction actually produced a result,
   // regardless of willRetry.  Overflow-triggered compaction sets willRetry=true
   // (the framework retries the LLM request), but the compaction itself succeeded
-  // and context was trimmed — the counter must reflect that.  (#38905)
+  // and context was trimmed -- the counter must reflect that.  (#38905)
   const hasResult = evt.result != null;
   const wasAborted = Boolean(evt.aborted);
   if (hasResult && !wasAborted) {
@@ -400,7 +400,7 @@ export function handleAutoCompactionEnd(
 
       void (async () => {
         if (hasDrift && sessionFile && chatId) {
-          // Drift: truncate session file → next message starts fresh
+          // Drift: truncate session file -> next message starts fresh
           try {
             await fs.writeFile(sessionFile, "", "utf-8");
           } catch {
@@ -408,7 +408,7 @@ export function handleAutoCompactionEnd(
           }
 
           await sendTelegramNotif(
-            `🔄 *Topic drift detected — fresh start*\n` +
+            `🔄 *Topic drift detected -- fresh start*\n` +
               `The conversation had drifted significantly. Context saved to memory.\n` +
               `_${dropped} messages archived · Starting clean._`,
             chatId,
@@ -416,7 +416,7 @@ export function handleAutoCompactionEnd(
         } else if (chatId) {
           await sendTelegramNotif(
             `🧠 *Compaction complete*\n` +
-              `${dropped} messages dropped / ${total} → ${kept} kept\n` +
+              `${dropped} messages dropped / ${total} -> ${kept} kept\n` +
               `_Key facts saved to vector memory._`,
             chatId,
           );
