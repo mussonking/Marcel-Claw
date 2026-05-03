@@ -276,6 +276,14 @@ export type TelegramGroupConfig = {
   errorPolicy?: "always" | "once" | "silent";
   /** Cooldown window for `errorPolicy: "once"` in milliseconds. */
   errorCooldownMs?: number;
+  /**
+   * Compaction behavior for this group.
+   * - "normal" (default): full fact extraction + drift detection
+   * - "light": minimal summary only, no drift detection, no Telegram notification
+   */
+  compactionMode?: "normal" | "light";
+  /** If true, the Librarian will analyze this group's sessions and store memories. Default: false. */
+  memoryEnabled?: boolean;
 };
 
 /** Config for LLM-based auto-topic labeling. */

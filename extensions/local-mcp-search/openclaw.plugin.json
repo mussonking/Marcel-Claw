@@ -1,0 +1,30 @@
+{
+  "id": "local-mcp-search",
+  "activation": {
+    "onStartup": false
+  },
+  "uiHints": {
+    "webSearch.baseUrl": {
+      "label": "Local MCP Search Base URL",
+      "help": "Base URL of the local MCP Search server. Defaults to http://127.0.0.1:8765."
+    }
+  },
+  "contracts": {
+    "webSearchProviders": ["local-mcp-search"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "webSearch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "baseUrl": {
+            "type": ["string", "object"]
+          }
+        }
+      }
+    }
+  }
+}

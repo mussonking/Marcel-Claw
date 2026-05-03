@@ -13761,6 +13761,13 @@ export const GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA = [
                 minimum: 0,
                 maximum: 9007199254740991,
               },
+              compactionMode: {
+                type: "string",
+                enum: ["normal", "light"],
+              },
+              memoryEnabled: {
+                type: "boolean",
+              },
             },
             additionalProperties: false,
           },
@@ -14822,6 +14829,13 @@ export const GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA = [
                       type: "integer",
                       minimum: 0,
                       maximum: 9007199254740991,
+                    },
+                    compactionMode: {
+                      type: "string",
+                      enum: ["normal", "light"],
+                    },
+                    memoryEnabled: {
+                      type: "boolean",
                     },
                   },
                   additionalProperties: false,

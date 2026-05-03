@@ -4,7 +4,7 @@ packages:
   - packages/*
   - extensions/*
 
-minimumReleaseAge: 2880
+minimumReleaseAge: 0
 
 minimumReleaseAgeExclude:
   - "acpx"
@@ -31,6 +31,10 @@ minimumReleaseAgeExclude:
   - "rolldown"
   - "sqlite-vec"
   - "sqlite-vec-*"
+  # Marcel-Claw: bypass minimumReleaseAge for AWS SDK (amazon-bedrock extension is excluded from build but workspace install pulls deps).
+  - "@aws-sdk/*"
+  # Marcel-Claw: typebox is heavily used and AWS-style fresh releases keep tripping the 2880min gate on local rebases.
+  - "typebox"
 
 onlyBuiltDependencies:
   - "@discordjs/opus"

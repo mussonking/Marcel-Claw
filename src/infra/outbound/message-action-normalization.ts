@@ -23,14 +23,21 @@ export function normalizeMessageActionInput(params: {
 
   const explicitTarget = normalizeOptionalString(normalizedArgs.target) ?? "";
   const hasLegacyTargetFields =
-    typeof normalizedArgs.to === "string" || typeof normalizedArgs.channelId === "string";
+    typeof normalizedArgs.to === "string" ||
+    typeof normalizedArgs.channelId === "string" ||
+    typeof normalizedArgs.chatId === "string" ||
+    typeof normalizedArgs.chat_id === "string";
   const hasLegacyTarget =
     (normalizeOptionalString(normalizedArgs.to) ?? "").length > 0 ||
-    (normalizeOptionalString(normalizedArgs.channelId) ?? "").length > 0;
+    (normalizeOptionalString(normalizedArgs.channelId) ?? "").length > 0 ||
+    (normalizeOptionalString(normalizedArgs.chatId) ?? "").length > 0 ||
+    (normalizeOptionalString(normalizedArgs.chat_id) ?? "").length > 0;
 
   if (explicitTarget && hasLegacyTargetFields) {
     delete normalizedArgs.to;
     delete normalizedArgs.channelId;
+    delete normalizedArgs.chatId;
+    delete normalizedArgs.chat_id;
   }
 
   if (
@@ -48,11 +55,16 @@ export function normalizeMessageActionInput(params: {
   if (!explicitTarget && actionRequiresTarget(action) && hasLegacyTarget) {
     const legacyTo = normalizeOptionalString(normalizedArgs.to) ?? "";
     const legacyChannelId = normalizeOptionalString(normalizedArgs.channelId) ?? "";
-    const legacyTarget = legacyTo || legacyChannelId;
+    const legacyChatId =
+      (normalizeOptionalString(normalizedArgs.chatId) ?? "") ||
+      (normalizeOptionalString(normalizedArgs.chat_id) ?? "");
+    const legacyTarget = legacyTo || legacyChannelId || legacyChatId;
     if (legacyTarget) {
       normalizedArgs.target = legacyTarget;
       delete normalizedArgs.to;
       delete normalizedArgs.channelId;
+      delete normalizedArgs.chatId;
+      delete normalizedArgs.chat_id;
     }
   }
 

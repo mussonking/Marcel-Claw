@@ -144,6 +144,8 @@ export const TelegramGroupSchema = z
     topics: z.record(z.string(), TelegramTopicSchema.optional()).optional(),
     errorPolicy: TelegramErrorPolicySchema,
     errorCooldownMs: z.number().int().nonnegative().optional(),
+    compactionMode: z.enum(["normal", "light"]).optional(),
+    memoryEnabled: z.boolean().optional(),
   })
   .strict();
 

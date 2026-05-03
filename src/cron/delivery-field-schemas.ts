@@ -7,8 +7,11 @@ const trimLowercaseStringPreprocess = (value: unknown) =>
   normalizeOptionalLowercaseString(value) ?? value;
 
 const DeliveryModeFieldSchema = z
-  .preprocess(trimLowercaseStringPreprocess, z.enum(["deliver", "announce", "none", "webhook"]))
-  .transform((value) => (value === "deliver" ? "announce" : value));
+  .preprocess(
+    trimLowercaseStringPreprocess,
+    z.enum(["deliver", "announce", "none", "webhook", "silent"]),
+  )
+  .transform((value) => (value === "deliver" ? "announce" : value === "silent" ? "none" : value));
 
 export const LowercaseNonEmptyStringFieldSchema = z.preprocess(
   trimLowercaseStringPreprocess,

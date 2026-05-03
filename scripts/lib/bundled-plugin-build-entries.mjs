@@ -9,7 +9,26 @@ import { shouldBuildBundledCluster } from "./optional-bundled-clusters.mjs";
 
 const TOP_LEVEL_PUBLIC_SURFACE_EXTENSIONS = new Set([".ts", ".js", ".mts", ".cts", ".mjs", ".cjs"]);
 export const NON_PACKAGED_BUNDLED_PLUGIN_DIRS = new Set(["qa-channel", "qa-lab", "qa-matrix"]);
-const EXCLUDED_CORE_BUNDLED_PLUGIN_DIRS = new Set(["qqbot"]);
+const EXCLUDED_CORE_BUNDLED_PLUGIN_DIRS = new Set([
+  "qqbot",
+  // Marcel-Claw exclusions: useless or security-sensitive extensions
+  // that this fork does not bundle. See CLAUDE.md for rationale.
+  "bonjour",
+  "file-transfer",
+  "azure-speech",
+  "cerebras",
+  "deepinfra",
+  "tencent",
+  "gradium",
+  "inworld",
+  "google-meet",
+  "senseaudio",
+  "tts-local-cli",
+  "diagnostics-prometheus",
+  "migrate-claude",
+  "migrate-hermes",
+  "voyage",
+]);
 const toPosixPath = (value) => value.replaceAll("\\", "/");
 
 function readBundledPluginPackageJson(packageJsonPath) {

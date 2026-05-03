@@ -1,0 +1,15 @@
+{
+  "name": "@openclaw/local-mcp-search-plugin",
+  "version": "2026.5.2",
+  "private": true,
+  "description": "Marcel-Claw local MCP search plugin (calls local MCP search server on 127.0.0.1:8765)",
+  "type": "module",
+  "devDependencies": {
+    "@openclaw/plugin-sdk": "workspace:*"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
